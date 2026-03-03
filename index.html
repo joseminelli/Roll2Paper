@@ -1,28 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <title>Roll2Paper | Digital RPG Sheet Protocol</title>
-    <meta name="description" content="Professional .cah to PDF converter for TTRPG players. High-fidelity data extraction with neon-themed digital interfaces by Whiskline Studio.">
-    <meta name="keywords" content="RPG, .cah converter, Whiskline Studio, Character Sheet PDF, D&D 5e Tool, Cyberpunk UI">
+    <meta name="description"
+        content="Professional .cah to PDF converter for TTRPG players. High-fidelity data extraction with neon-themed digital interfaces by Whiskline Studio.">
+    <meta name="keywords"
+        content="RPG, .cah converter, Whiskline Studio, Character Sheet PDF, D&D 5e Tool, Cyberpunk UI">
     <meta name="author" content="Whiskline Studio">
     <meta name="robots" content="index, follow">
-    
+
     <meta property="og:title" content="Roll2Paper Protocol">
-    <meta property="og:description" content="Convert your digital character data into high-quality printable PDF protocols.">
+    <meta property="og:description"
+        content="Convert your digital character data into high-quality printable PDF protocols.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="bg-[#020617] text-slate-100 min-h-screen p-4 md:p-8 select-none font-sans">
 
     <div class="max-w-6xl mx-auto space-y-8">
-        <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900/50 p-8 rounded-3xl neon-border">
+        <header
+            class="flex flex-col md:flex-row justify-between items-center bg-slate-900/50 p-8 rounded-3xl neon-border">
             <div class="text-center md:text-left mb-6 md:mb-0">
-                <h1 class="text-5xl font-black text-theme tracking-tighter italic uppercase drop-shadow-[0_0_10px_rgba(var(--theme-color-rgb),0.5)]">
+                <h1
+                    class="text-5xl font-black text-theme tracking-tighter italic uppercase drop-shadow-[0_0_10px_rgba(var(--theme-color-rgb),0.5)]">
                     Roll2Paper
                 </h1>
                 <p class="text-slate-500 text-[10px] font-mono tracking-[0.4em] uppercase mt-1">
@@ -31,75 +38,102 @@
             </div>
 
             <div class="flex flex-col items-center gap-3">
-                <span class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600">Visual Core Selection</span>
+                <span class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600">Visual Core
+                    Selection</span>
                 <div class="flex gap-5">
-                    <button onclick="setTheme('teal')" class="w-7 h-7 rounded-lg bg-teal-500 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(20,184,166,0.4)] border border-white/20"></button>
-                    <button onclick="setTheme('red')" class="w-7 h-7 rounded-lg bg-red-600 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-white/20"></button>
-                    <button onclick="setTheme('blue')" class="w-7 h-7 rounded-lg bg-blue-600 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-white/20"></button>
-                    <button onclick="setTheme('green')" class="w-7 h-7 rounded-lg bg-emerald-600 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(16,185,129,0.4)] border border-white/20"></button>
+                    <button onclick="setTheme('teal')"
+                        class="w-7 h-7 rounded-lg bg-teal-500 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(20,184,166,0.4)] border border-white/20"></button>
+                    <button onclick="setTheme('red')"
+                        class="w-7 h-7 rounded-lg bg-red-600 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-white/20"></button>
+                    <button onclick="setTheme('blue')"
+                        class="w-7 h-7 rounded-lg bg-blue-600 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-white/20"></button>
+                    <button onclick="setTheme('green')"
+                        class="w-7 h-7 rounded-lg bg-emerald-600 transition-all hover:scale-110 hover:rotate-45 shadow-[0_0_15px_rgba(16,185,129,0.4)] border border-white/20"></button>
                 </div>
             </div>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div class="lg:col-span-1 space-y-8">
-                <div class="drop-zone border-2 border-dashed border-theme/20 rounded-3xl p-10 text-center bg-slate-900/40 group transition-all hover:border-theme/60 hover:bg-theme/5 cursor-pointer">
+                <div
+                    class="drop-zone border-2 border-dashed border-theme/20 rounded-3xl p-10 text-center bg-slate-900/40 group transition-all hover:border-theme/60 hover:bg-theme/5 cursor-pointer">
                     <input type="file" id="fileInput" accept=".cah,.json" class="hidden">
                     <label for="fileInput" class="cursor-pointer block">
-                        <div class="text-6xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">💾</div>
-                        <span id="fileName" class="text-slate-400 font-bold tracking-tight text-sm uppercase tracking-widest">Load Source</span>
-                        <p class="text-[9px] text-slate-600 mt-2 uppercase font-mono tracking-tighter">Encrypted .cah files only</p>
+                        <div
+                            class="text-6xl mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
+                            💾</div>
+                        <span id="fileName"
+                            class="text-slate-300 font-bold tracking-tight text-sm uppercase tracking-widest block truncate max-w-full px-2">
+                            Load file (.cah)
+                        </span>
+                        <p class="text-[9px] text-slate-600 mt-2 uppercase font-mono tracking-tighter">Encrypted .cah
+                            files only</p>
                     </label>
                 </div>
 
                 <div id="dashboard" class="bg-slate-900/60 p-6 rounded-3xl neon-border hidden">
-                    <h2 class="text-theme font-black mb-6 uppercase text-[10px] tracking-[0.3em] border-b border-slate-800 pb-3">Operational Resources</h2>
+                    <h2
+                        class="text-theme font-black mb-6 uppercase text-[10px] tracking-[0.3em] border-b border-slate-800 pb-3">
+                        Operational Resources</h2>
                     <div id="resource-container" class="space-y-5">
                         <div class="bg-black/40 p-4 rounded-2xl border border-slate-800/50 shadow-inner">
-                            <div class="flex justify-between text-[9px] mb-3 font-black text-slate-500 uppercase tracking-widest">
+                            <div
+                                class="flex justify-between text-[9px] mb-3 font-black text-slate-500 uppercase tracking-widest">
                                 <span>Health Integrity</span>
                                 <span id="hp-val" class="text-theme">0 / 0</span>
                             </div>
                             <div class="w-full bg-slate-950 h-2 rounded-sm p-[2px]">
-                                <div id="hp-progress" class="bg-theme h-full transition-all duration-700 shadow-[0_0_10px_var(--theme-color)]" style="width: 0%"></div>
+                                <div id="hp-progress"
+                                    class="bg-theme h-full transition-all duration-700 shadow-[0_0_10px_var(--theme-color)]"
+                                    style="width: 0%"></div>
                             </div>
                         </div>
-                        </div>
+                    </div>
                 </div>
             </div>
 
             <div id="char-content" class="lg:col-span-3 space-y-8 hidden">
                 <div class="bg-slate-900/40 p-8 rounded-3xl neon-border shadow-2xl">
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6" id="attr-grid">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="bg-slate-900/40 p-8 rounded-3xl neon-border h-[480px] flex flex-col">
                         <div class="flex items-center gap-3 mb-5 border-b border-slate-800 pb-4">
                             <div class="w-2 h-2 bg-theme shadow-[0_0_10px_var(--theme-color)]"></div>
-                            <h3 class="text-slate-400 font-black text-[11px] uppercase tracking-[0.3em]">Ability Subroutines</h3>
+                            <h3 class="text-slate-400 font-black text-[11px] uppercase tracking-[0.3em]">Ability
+                                Subroutines</h3>
                         </div>
-                        <div id="feats-list" class="space-y-4 text-[12px] text-slate-400 overflow-y-auto pr-4 custom-scrollbar"></div>
+                        <div id="feats-list"
+                            class="space-y-4 text-[12px] text-slate-400 overflow-y-auto pr-4 custom-scrollbar"></div>
                     </div>
 
                     <div class="bg-slate-900/40 p-8 rounded-3xl neon-border h-[480px] flex flex-col">
                         <div class="flex items-center gap-3 mb-5 border-b border-slate-800 pb-4">
                             <div class="w-2 h-2 bg-theme shadow-[0_0_10px_var(--theme-color)]"></div>
-                            <h3 class="text-slate-400 font-black text-[11px] uppercase tracking-[0.3em]">Inventory Manifest</h3>
+                            <h3 class="text-slate-400 font-black text-[11px] uppercase tracking-[0.3em]">Inventory
+                                Manifest</h3>
                         </div>
-                        <ul id="equip-list" class="space-y-2 text-[12px] text-slate-400 overflow-y-auto pr-4 custom-scrollbar"></ul>
+                        <ul id="equip-list"
+                            class="space-y-2 text-[12px] text-slate-400 overflow-y-auto pr-4 custom-scrollbar"></ul>
                     </div>
                 </div>
 
-                <div class="bg-slate-900/80 p-6 rounded-3xl border border-theme/30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl backdrop-blur-md" style="border-width: 0 !important">
+                <div class="bg-slate-900/80 p-6 rounded-3xl border border-theme/30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl backdrop-blur-md"
+                    style="border-width: 0 !important">
                     <label class="flex items-center cursor-pointer group gap-4">
                         <input type="checkbox" id="compactMode" class="sr-only peer" checked>
-                        <div class="w-12 h-6 bg-slate-800 rounded-full peer peer-checked:bg-theme/20 border border-slate-700 transition-all relative after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6 peer-checked:after:bg-theme peer-checked:border-theme peer-checked:after:shadow-[0_0_10px_var(--theme-color)] shadow-inner"></div>
-                        <span class="text-[10px] font-black text-slate-500 group-hover:text-slate-300 uppercase tracking-[0.2em] transition-colors">Compact Protocol Active</span>
+                        <div
+                            class="w-12 h-6 bg-slate-800 rounded-full peer peer-checked:bg-theme/20 border border-slate-700 transition-all relative after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6 peer-checked:after:bg-theme peer-checked:border-theme peer-checked:after:shadow-[0_0_10px_var(--theme-color)] shadow-inner">
+                        </div>
+                        <span
+                            class="text-[10px] font-black text-slate-500 group-hover:text-slate-300 uppercase tracking-[0.2em] transition-colors">Compact
+                            Protocol Active</span>
                     </label>
-                    
-                    <button id="generateBtn" class="w-full md:w-auto bg-theme text-black font-black py-5 px-16 rounded-xl hover:brightness-125 hover:shadow-[0_0_30px_rgba(var(--theme-color-rgb),0.4)] active:scale-95 transition-all duration-300 uppercase text-[11px] tracking-[0.4em]">
+
+                    <button id="generateBtn"
+                        class="w-full md:w-auto bg-theme text-black font-black py-5 px-16 rounded-xl hover:brightness-125 hover:shadow-[0_0_30px_rgba(var(--theme-color-rgb),0.4)] active:scale-95 transition-all duration-300 uppercase text-[11px] tracking-[0.4em]">
                         Execute Export Sequence
                     </button>
                 </div>
@@ -109,4 +143,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
