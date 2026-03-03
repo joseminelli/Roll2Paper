@@ -53,8 +53,17 @@ body {
 
 .attr-card {
     background: rgba(15, 23, 42, 0.8);
-    border-top: 2px solid var(--theme-color);
+    position: relative;
     clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+}
+
+.attr-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-top: 2px solid var(--theme-color);
+    border-left: 1px solid rgba(var(--theme-color-rgb), 0.3);
+    pointer-events: none;
 }
 
 @keyframes fadeIn {

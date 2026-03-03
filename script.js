@@ -59,9 +59,9 @@ function setupUI() {
     ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(s => {
         const score = charData[s].score;
         grid.innerHTML += `
-        <div class="attr-card p-3 text-center transition-all hover:brightness-125 border-theme/20 border">
+        <div class="attr-card p-3 text-center transition-all hover:brightness-125 shadow-lg">
             <div class="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">${s.substring(0, 3)}</div>
-            <div class="text-2xl font-black tracking-tighter">${score}</div>
+            <div class="text-2xl font-black tracking-tighter text-white">${score}</div>
             <div class="text-theme text-[10px] font-bold mt-1">${getMod(score)}</div>
         </div>`;
     });
@@ -181,10 +181,10 @@ document.getElementById('generateBtn').addEventListener('click', () => {
     doc.setFont("helvetica", "normal");
     const raceObj = typeof charData.requiredRace === 'string' ? JSON.parse(charData.requiredRace) : charData.requiredRace;
     const classes = charData.jobs.map(j => `${j.jobId.toUpperCase()} (${j.level})`).join(' / ');
-    
+
     const bgRaw = charData.background?.backgroundId || "None";
     const bgFormatado = bgRaw.charAt(0).toUpperCase() + bgRaw.slice(1).replace(/_/g, ' ');
-    
+
     doc.text(`${raceObj.name} | ${classes} | ${bgFormatado}`, 15, 28);
     doc.setFontSize(8);
     doc.text(`AC: ${acFinal} | INIC: ${getMod(charData.dexterity.score)} | PROF: +${bonusProf} | PASSIVE PERC: ${passivePerception}`, 15, 35);
