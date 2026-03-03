@@ -1,29 +1,38 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .card-container {
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(45, 212, 191, 0.2);
+    backdrop-filter: blur(12px);
+    background-color: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .drop-zone {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.drop-zone:hover {
-    background-color: rgba(45, 212, 191, 0.05);
-    border-color: #2dd4bf;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(15, 23, 42, 0.5);
 }
 
 .drop-zone.active {
     border-color: #2dd4bf;
-    background-color: rgba(45, 212, 191, 0.15);
+    background: rgba(45, 212, 191, 0.1);
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.2);
     transform: scale(1.02);
 }
 
-button:active {
-    transform: scale(0.98);
+button {
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+button:not(:disabled):hover {
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.4);
+    letter-spacing: 0.1em;
 }
