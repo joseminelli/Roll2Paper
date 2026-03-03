@@ -1,22 +1,65 @@
 :root {
-    --theme-color: #009688; /* Teal padrão */
+    --theme-color: #009688;
+    --theme-color-rgb: 0, 150, 136;
+    --bg-dark: #020617;
+    --card-bg: #0f172a;
+}
+
+body {
+    background-color: var(--bg-dark);
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #f8fafc;
 }
 
 .text-theme { color: var(--theme-color); }
 .bg-theme { background-color: var(--theme-color); }
 .border-theme { border-color: var(--theme-color); }
 
-/* Animação de entrada */
-#char-content, #dashboard {
-    animation: fadeIn 0.4s ease-out forwards;
+.neon-border {
+    border: 1px solid rgba(var(--theme-color-rgb), 0.3);
+    box-shadow: 0 0 15px rgba(var(--theme-color-rgb), 0.1), 
+                inset 0 0 10px rgba(var(--theme-color-rgb), 0.05);
+    transition: all 0.3s ease;
+}
+
+.neon-border:hover {
+    border-color: var(--theme-color);
+    box-shadow: 0 0 20px rgba(var(--theme-color-rgb), 0.2), 
+                inset 0 0 15px rgba(var(--theme-color-rgb), 0.1);
+}
+
+.resource-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background-color: var(--theme-color);
+    box-shadow: 0 0 8px var(--theme-color);
+    display: inline-block;
+    animation: flicker 2s infinite alternate;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.8; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1.05); shadow: 0 0 12px var(--theme-color); }
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+    background: var(--theme-color); 
+    border-radius: 2px;
+    box-shadow: 0 0 5px var(--theme-color);
+}
+
+.attr-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-top: 2px solid var(--theme-color);
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0f172a; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+#char-content, #dashboard { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
