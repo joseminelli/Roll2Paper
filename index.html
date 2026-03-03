@@ -3,34 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roll2Paper</title>
+    <title>Roll2Paper - Universal Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
-    <meta name="google-site-verification" content="LcE7TMNk3T810JSqR4r0XBrA20ZC3HgsYIsjJVIpkUs" />
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-6">
+<body class="bg-slate-900 text-white min-h-screen p-4 md:p-8">
 
-    <div class="card-container bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-lg w-full border border-teal-500/20">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-teal-400 tracking-tighter">Roll2Paper <span class="text-white font-light text-2xl"></span></h1>
-            <p class="text-slate-400 mt-2">Conversor Completo de Personagem (.cah)</p>
-        </div>
+    <div class="max-w-5xl mx-auto space-y-6">
+        <header class="flex flex-col md:flex-row justify-between items-center bg-slate-800 p-6 rounded-2xl border border-teal-500/20 shadow-xl">
+            <div class="text-center md:text-left mb-4 md:mb-0">
+                <h1 class="text-4xl font-black text-theme tracking-tighter italic">Roll2Paper</h1>
+                <p class="text-slate-400 text-sm font-mono uppercase tracking-widest">Digital Sheet Converter</p>
+            </div>
 
-        <div class="drop-zone border-2 border-dashed border-teal-500/30 rounded-xl p-10 text-center transition-all hover:border-teal-400 bg-slate-900/50 group">
-            <input type="file" id="fileInput" accept=".cah" class="hidden">
-            <label for="fileInput" class="cursor-pointer block">
-                <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">⚔️</div>
-                <span class="text-lg font-medium text-slate-300 block" id="fileName">Arraste ou selecione o arquivo .cah</span>
-            </label>
-        </div>
+            <div class="flex flex-col items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Aparência do Documento</span>
+                <div class="flex gap-4">
+                    <button onclick="setTheme('teal')" class="w-6 h-6 rounded-full bg-teal-500 transition-transform hover:scale-125 border border-white/20 shadow-lg"></button>
+                    <button onclick="setTheme('red')" class="w-6 h-6 rounded-full bg-red-600 transition-transform hover:scale-125 border border-white/20 shadow-lg"></button>
+                    <button onclick="setTheme('blue')" class="w-6 h-6 rounded-full bg-blue-600 transition-transform hover:scale-125 border border-white/20 shadow-lg"></button>
+                    <button onclick="setTheme('green')" class="w-6 h-6 rounded-full bg-emerald-600 transition-transform hover:scale-125 border border-white/20 shadow-lg"></button>
+                </div>
+            </div>
+        </header>
 
-        <button id="generateBtn" disabled class="mt-8 w-full bg-teal-600 hover:bg-teal-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all shadow-xl uppercase tracking-widest">
-            Gerar Ficha Completa
-        </button>
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-6">
+                <div class="drop-zone border-2 border-dashed border-theme/30 rounded-2xl p-8 text-center bg-slate-800/50 group">
+                    <input type="file" id="fileInput" accept=".cah" class="hidden">
+                    <label for="fileInput" class="cursor-pointer block">
+                        <div class="text-5xl mb-3 group-hover:scale-110 transition-transform">📜</div>
+                        <span id="fileName" class="text-slate-300 font-medium">Suba seu .cah</span>
+                    </label>
+                </div>
+
+                <div id="dashboard" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hidden">
+                    <h2 class="text-theme font-bold mb-4 uppercase text-sm tracking-widest">Painel de Sessão</h2>
+                    <div id="resource-container" class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span>Vida (HP)</span><span id="hp-val">--/--</span></div>
+                            <input type="range" id="hp-range" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-theme">
+                        </div>
+                        </div>
+                </div>
+            </div>
+
+            <div id="char-content" class="lg:col-span-2 space-y-6 hidden">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <div class="grid grid-cols-3 md:grid-cols-6 gap-4" id="attr-grid"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 h-[450px] flex flex-col">
+                        <h3 class="text-theme font-bold mb-3 text-sm">HABILIDADES</h3>
+                        <div id="feats-list" class="space-y-3 text-xs text-slate-300 overflow-y-auto pr-2"></div>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 h-[450px] flex flex-col">
+                        <h3 class="text-theme font-bold mb-3 text-sm">EQUIPAMENTO</h3>
+                        <ul id="equip-list" class="space-y-1 text-xs text-slate-300 overflow-y-auto pr-2"></ul>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex items-center justify-between">
+                    <label class="flex items-center cursor-pointer gap-3">
+                        <input type="checkbox" id="compactMode" class="sr-only peer" checked>
+                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:bg-theme after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 relative"></div>
+                        <span class="text-xs font-bold text-slate-400 uppercase">Modo Compacto</span>
+                    </label>
+                    <button id="generateBtn" class="bg-theme text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:brightness-110 transition-all uppercase text-xs tracking-widest">
+                        Gerar PDF
+                    </button>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="script.js"></script>
-    <script src="dragAndDrop.js"></script>
 </body>
 </html>

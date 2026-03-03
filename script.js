@@ -1,162 +1,283 @@
 const { jsPDF } = window.jspdf;
 let charData = null;
+let currentTheme = [0, 150, 136];
 
-const fileInput = document.getElementById('fileInput');
-const generateBtn = document.getElementById('generateBtn');
-const fileNameDisplay = document.getElementById('fileName');
+function setTheme(color) {
+    const root = document.documentElement;
+    const colors = {
+        teal: { hex: '#009688', rgb: [0, 150, 136] },
+        red: { hex: '#dc2626', rgb: [220, 38, 38] },
+        blue: { hex: '#2563eb', rgb: [37, 99, 235] },
+        green: { hex: '#059669', rgb: [5, 150, 105] }
+    };
+    root.style.setProperty('--theme-color', colors[color].hex);
+    currentTheme = colors[color].rgb;
+}
 
-// Função utilitária para calcular modificador de atributo (Regra D&D 5e)
 const getMod = (score) => {
     const mod = Math.floor((score - 10) / 2);
     return mod >= 0 ? `+${mod}` : `${mod}`;
 };
 
-fileInput.addEventListener('change', function(e) {
+document.getElementById('fileInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    fileNameDisplay.innerText = file.name;
+    document.getElementById('fileName').innerText = file.name;
     const reader = new FileReader();
     reader.onload = (event) => {
         try {
             charData = JSON.parse(event.target.result);
-            generateBtn.disabled = false;
+            setupUI();
         } catch (err) { alert("Erro ao processar o arquivo."); }
     };
     reader.readAsText(file);
 });
 
-generateBtn.addEventListener('click', () => {
+function setupUI() {
+    if (!charData) return;
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('char-content').classList.remove('hidden');
+
+    const featContainer = document.getElementById('feats-list');
+    const equipList = document.getElementById('equip-list');
+    const grid = document.getElementById('attr-grid');
+    featContainer.innerHTML = '';
+    equipList.innerHTML = '';
+    grid.innerHTML = '';
+
+    const raceObj = typeof charData.requiredRace === 'string' ? JSON.parse(charData.requiredRace) : charData.requiredRace;
+    const raceName = raceObj ? raceObj.name : "Raça Desconhecida";
+    const classes = charData.jobs.map(j => `${j.jobId.toUpperCase()} (${j.level})`).join(' / ');
+    document.querySelector('header p').innerText = `${raceName} | ${classes}`;
+
+    ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(s => {
+        const score = charData[s].score;
+        grid.innerHTML += `
+            <div class="text-center border border-slate-700 p-2 rounded-lg bg-slate-900/30">
+                <div class="text-[10px] text-slate-500 font-bold">${s.substring(0, 3).toUpperCase()}</div>
+                <div class="text-lg font-bold">${score}</div>
+                <div class="text-theme text-xs font-black">${getMod(score)}</div>
+            </div>`;
+    });
+
+    let allRequiredData = charData.allRequiredClasses;
+    if (typeof allRequiredData === 'string') allRequiredData = JSON.parse(allRequiredData);
+
+    const idArquetipoEscolhido = charData.jobs[0].archetypeId;
+    const nivelPersonagem = charData.jobs[0].level || 1;
+    const habilidadesUnicas = new Set();
+
+    if (allRequiredData && allRequiredData.jobs) {
+        allRequiredData.jobs.forEach(jobEntry => {
+            const job = typeof jobEntry === 'string' ? JSON.parse(jobEntry) : jobEntry;
+            let features = [...(job.features || [])];
+            if (job.archetypes) {
+                job.archetypes.forEach(arch => {
+                    if (arch.id === idArquetipoEscolhido || arch.name === idArquetipoEscolhido) {
+                        if (arch.features) features.push(...arch.features);
+                    }
+                });
+            }
+
+            features.forEach(f => {
+                const lvlReq = f.feat ? f.feat.requiredLevel || 0 : 0;
+                if (f.feat && f.feat.name && !habilidadesUnicas.has(f.feat.name) && lvlReq <= nivelPersonagem) {
+                    habilidadesUnicas.add(f.feat.name);
+                    featContainer.innerHTML += `
+                        <div class="border-l-2 border-theme pl-2 py-1 mb-2">
+                            <div class="font-bold text-white text-[11px]">${f.feat.name.toUpperCase()}</div>
+                            <div class="text-slate-400 text-[10px] leading-tight">
+                                ${f.feat.descriptionModels[0].description.substring(0, 90)}...
+                            </div>
+                        </div>`;
+                }
+            });
+        });
+    }
+
+    if (charData.equipment) {
+        charData.equipment.forEach(e => {
+            equipList.innerHTML += `<li class="flex justify-between border-b border-slate-700/50 py-1 text-[10px]"><span>${e.name}</span><span class="text-theme font-bold">x${e.amount}</span></li>`;
+        });
+    }
+    atualizarRecursosDinamicos();
+}
+
+function atualizarRecursosDinamicos() {
+    const resourceContainer = document.getElementById('resource-container');
+    const existingResources = resourceContainer.querySelectorAll('.dynamic-res');
+    existingResources.forEach(r => r.remove());
+
+    if (charData.specialAbilities) {
+        charData.specialAbilities.forEach(ability => {
+            if (ability.amountsPerLevel && ability.amountsPerLevel.length > 0) {
+                const max = ability.amountsPerLevel[ability.amountsPerLevel.length - 1].amount;
+                const div = document.createElement('div');
+                div.className = 'dynamic-res flex justify-between items-center bg-slate-900/50 p-3 rounded-xl mt-2';
+                div.innerHTML = `<span class="text-[10px] font-bold text-slate-400">${ability.name.toUpperCase()}</span><div class="flex gap-1">${Array(parseInt(max)).fill('<input type="checkbox" class="w-3 h-3 accent-theme" checked>').join('')}</div>`;
+                resourceContainer.appendChild(div);
+            }
+        });
+    }
+}
+
+document.getElementById('generateBtn').addEventListener('click', () => {
     if (!charData) return;
     const doc = new jsPDF();
-    const teal = [0, 150, 136];
-    let y = 45;
+    const c = currentTheme;
+    const isCompact = document.getElementById('compactMode').checked;
+    const nivelPersonagem = charData.jobs[0].level || 1;
+    const idArquetipoEscolhido = charData.jobs[0].archetypeId;
 
-    // --- CABEÇALHO ESTILIZADO ---
-    doc.setFillColor(teal[0], teal[1], teal[2]);
+    doc.setFillColor(c[0], c[1], c[2]);
     doc.rect(0, 0, 210, 40, 'F');
     doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(26);
     doc.text(charData.name.toUpperCase(), 105, 18, { align: 'center' });
     
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    // Dinâmico: Pega a raça e classe do JSON 
-    const raceName = charData.requiredRace ? JSON.parse(charData.requiredRace).name : "Humano";
-    const level = charData.jobs[0].level;
-    doc.text(`${raceName} | Fighter (Samurai) | Nível ${level}`, 105, 28, { align: 'center' });
+    const raceObj = typeof charData.requiredRace === 'string' ? JSON.parse(charData.requiredRace) : charData.requiredRace;
+    doc.text(`${raceObj.name} | Nível ${nivelPersonagem} | Nobre`, 105, 28, { align: 'center' });
 
-    // --- BLOCOS DE STATUS (DINÂMICOS) ---
-    doc.setTextColor(0, 0, 0);
-    const statsTop = [
-        { l: "HP ATUAL", v: charData.hp || "0" },
-        { l: "HP MAX", v: "24" }, // Valor do print 
-        { l: "AC", v: "11" },     // Valor do print 
-        { l: "INICIATIVA", v: "+1" },
-        { l: "BÔNUS PROF.", v: "+2" }
+    const bonusProf = Math.ceil(1 + (nivelPersonagem / 4));
+    const percPassiva = 10 + parseInt(getMod(charData.wisdom.score));
+    const statusCombate = [
+        { l: "AC", v: "11" },
+        { l: "INIC.", v: getMod(charData.dexterity.score) },
+        { l: "PROF.", v: `+${bonusProf}` },
+        { l: "PERC. P.", v: percPassiva }
     ];
+
+    doc.setFontSize(8);
+    let xStatus = 145;
+    statusCombate.forEach(s => {
+        doc.text(`${s.l}: ${s.v}`, xStatus, 36);
+        xStatus += 15;
+    });
 
     let xBox = 15;
-    statsTop.forEach(s => {
-        doc.setDrawColor(teal[0], teal[1], teal[2]);
-        doc.setLineWidth(0.5);
-        doc.roundedRect(xBox, 45, 34, 18, 2, 2, 'D');
-        doc.setFontSize(7);
-        doc.text(s.l, xBox + 17, 50, { align: 'center' });
-        doc.setFontSize(13);
-        doc.setFont("helvetica", "bold");
-        doc.text(String(s.v), xBox + 17, 58, { align: 'center' });
-        xBox += 36;
-    });
-
-    // --- ATRIBUTOS COM CÁLCULO AUTOMÁTICO ---
-    y = 75;
-    doc.setFontSize(12);
-    doc.setTextColor(teal[0], teal[1], teal[2]);
-    doc.text("ATRIBUTOS", 15, y);
-    
-    y += 5;
-    const attr = [
-        { n: "FOR", s: charData.strength.score },
-        { n: "DES", s: charData.dexterity.score },
-        { n: "CON", s: charData.constitution.score },
-        { n: "INT", s: charData.intelligence.score },
-        { n: "SAB", s: charData.wisdom.score },
-        { n: "CAR", s: charData.charisma.score }
+    const stats = [
+        { n: 'FOR', v: charData.strength.score }, { n: 'DES', v: charData.dexterity.score },
+        { n: 'CON', v: charData.constitution.score }, { n: 'INT', v: charData.intelligence.score },
+        { n: 'SAB', v: charData.wisdom.score }, { n: 'CAR', v: charData.charisma.score }
     ];
-
-    let xAttr = 15;
-    attr.forEach(a => {
-        doc.setDrawColor(220);
-        doc.setFillColor(250);
-        doc.roundedRect(xAttr, y, 28, 15, 1, 1, 'FD');
+    stats.forEach(s => {
+        doc.setDrawColor(c[0], c[1], c[2]);
+        doc.roundedRect(xBox, 45, 28, 15, 2, 2, 'D');
         doc.setFontSize(8);
-        doc.setTextColor(100);
-        doc.text(a.n, xAttr + 14, y + 5, { align: 'center' });
+        doc.setTextColor(c[0], c[1], c[2]);
+        doc.text(s.n, xBox + 14, 50, { align: 'center' });
+        doc.setFontSize(10);
         doc.setTextColor(0);
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.text(`${a.s} (${getMod(a.s)})`, xAttr + 14, y + 11, { align: 'center' });
-        xAttr += 30;
+        doc.text(`${s.v} (${getMod(s.v)})`, xBox + 14, 56, { align: 'center' });
+        xBox += 31;
     });
 
-    // --- BIO E EQUIPAMENTO (LAYOUT EM COLUNAS) ---
-    y += 30;
-    doc.setFontSize(12);
-    doc.setTextColor(teal[0], teal[1], teal[2]);
-    doc.text("PERSONALIDADE", 15, y);
-    doc.text("EQUIPAMENTO", 110, y);
+    let y = 75;
 
-    y += 6;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(50);
-    doc.text(`Ideal: ${charData.ideals}`, 15, y);
-    doc.text(`Vínculo: ${charData.bonds}`, 15, y + 5);
-    
-    // Caixa de Bio estilizada
-    doc.setFillColor(248);
-    doc.rect(15, y + 10, 85, 25, 'F');
-    doc.setDrawColor(teal[0], teal[1], teal[2]);
-    doc.line(15, y + 10, 15, y + 35);
-    doc.text(charData.about || "Sem biografia.", 18, y + 16, { maxWidth: 80 });
-
-    // Lista de Equipamento
-    let equipY = y;
-    charData.equipment.forEach(e => {
-        doc.text(`- ${e.name} (x${e.amount})`, 110, equipY);
-        equipY += 5;
-    });
-
-    // --- ARQUÉTIPO (PÁGINA 2) ---
-    doc.addPage();
-    y = 25;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(teal[0], teal[1], teal[2]);
-    doc.text("ARQUÉTIPO: SAMURAI", 15, y);
-    doc.line(15, y+2, 80, y+2);
-
-    y += 12;
-    const samuraiClass = JSON.parse(charData.allRequiredClasses.jobs[0]);
-    const samuraiFeatures = samuraiClass.archetypes.find(a => a.name === "Samurai").features;
-
-    samuraiFeatures.forEach(feat => {
-        if(y > 260) { doc.addPage(); y = 25; }
+    if (charData.personalityTraits || charData.bonds) {
+        doc.setTextColor(c[0], c[1], c[2]);
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(teal[0], teal[1], teal[2]);
-        doc.text(feat.feat.name.toUpperCase(), 15, y);
-        
+        doc.text("PERSONALIDADE E VÍNCULOS", 15, y);
         y += 6;
-        doc.setFontSize(10);
+
+        doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
+        doc.setTextColor(80);
+        
+        const traits = doc.splitTextToSize(`Traços: ${charData.personalityTraits || "---"}`, 180);
+        const bonds = doc.splitTextToSize(`Vínculos: ${charData.bonds || "---"}`, 180);
+        
+        doc.text(traits, 15, y);
+        y += (traits.length * 4) + 2;
+        doc.text(bonds, 15, y);
+        y += (bonds.length * 4) + 6;
+    }
+
+    if (charData.about && charData.about.trim() !== "") {
+        doc.setTextColor(c[0], c[1], c[2]);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("HISTÓRIA", 15, y);
+        y += 5;
+
+        const bioLines = doc.splitTextToSize(charData.about, 175);
+        const boxHeight = (bioLines.length * 5) + 6;
+        doc.setFillColor(248, 248, 248);
+        doc.rect(15, y, 180, boxHeight, 'F');
+        doc.setDrawColor(c[0], c[1], c[2]);
+        doc.line(15, y, 15, y + boxHeight); 
+        
         doc.setTextColor(0);
-        const desc = feat.feat.descriptionModels[0].description;
-        const splitDesc = doc.splitTextToSize(desc, 180);
-        doc.text(splitDesc, 15, y);
-        y += (splitDesc.length * 5) + 8;
+        doc.setFontSize(9);
+        doc.text(bioLines, 19, y + 6);
+        y += boxHeight + 10;
+    }
+
+    doc.setTextColor(c[0], c[1], c[2]);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("HABILIDADES E CARACTERÍSTICAS", 15, y);
+    y += 8;
+
+    const habilidadesUnicas = new Set();
+    let allRequiredData = typeof charData.allRequiredClasses === 'string' ? JSON.parse(charData.allRequiredClasses) : charData.allRequiredClasses;
+
+    allRequiredData.jobs.forEach(jobEntry => {
+        const job = typeof jobEntry === 'string' ? JSON.parse(jobEntry) : jobEntry;
+        let featuresBrutas = [...(job.features || [])];
+        if (job.archetypes) {
+            job.archetypes.forEach(arch => {
+                if (arch.id === idArquetipoEscolhido || arch.name === idArquetipoEscolhido) {
+                    if (arch.features) featuresBrutas.push(...arch.features);
+                }
+            });
+        }
+
+        featuresBrutas.forEach(f => {
+            const lvlReq = f.feat ? f.feat.requiredLevel || 0 : 0;
+            if (f.feat && f.feat.name && !habilidadesUnicas.has(f.feat.name) && lvlReq <= nivelPersonagem) {
+                habilidadesUnicas.add(f.feat.name);
+
+                if (y > 270) { doc.addPage(); y = 20; }
+                
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                
+                const descRaw = f.feat.descriptionModels[0].description;
+
+                if (isCompact) {
+                    const titulo = `• ${f.feat.name.toUpperCase()}: `;
+                    doc.setFont("helvetica", "bold");
+                    doc.text(titulo, 15, y);
+
+                    const larguraTitulo = doc.getTextWidth(titulo);
+                    const resumo = descRaw.split('.')[0] + ".";
+                    doc.setFont("helvetica", "normal");
+                    
+                    const resumoLines = doc.splitTextToSize(resumo, 185 - larguraTitulo);
+                    doc.text(resumoLines, 15 + larguraTitulo, y);
+                    y += (resumoLines.length * 5) + 2;
+                } else {
+                    doc.text(f.feat.name.toUpperCase(), 15, y);
+                    y += 5;
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(9);
+                    const descSplit = doc.splitTextToSize(descRaw, 180);
+                    doc.text(descSplit, 15, y);
+                    y += (descSplit.length * 5) + 6;
+                }
+            }
+        });
     });
+
+    doc.setFontSize(7);
+    doc.setTextColor(150);
+    doc.text(`Roll2Paper | ${charData.name} | Gerado em 2026`, 105, 290, { align: 'center' });
 
     doc.save(`Roll2Paper_${charData.name}.pdf`);
 });

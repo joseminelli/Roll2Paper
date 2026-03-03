@@ -1,38 +1,22 @@
-body {
-    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+:root {
+    --theme-color: #009688; /* Teal padrão */
 }
 
-.card-container {
-    backdrop-filter: blur(12px);
-    background-color: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(45, 212, 191, 0.3);
-    animation: slideUp 0.6s ease-out;
+.text-theme { color: var(--theme-color); }
+.bg-theme { background-color: var(--theme-color); }
+.border-theme { border-color: var(--theme-color); }
+
+/* Animação de entrada */
+#char-content, #dashboard {
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.drop-zone {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(15, 23, 42, 0.5);
-}
-
-.drop-zone.active {
-    border-color: #2dd4bf;
-    background: rgba(45, 212, 191, 0.1);
-    box-shadow: 0 0 20px rgba(45, 212, 191, 0.2);
-    transform: scale(1.02);
-}
-
-button {
-    transition: all 0.3s ease;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-button:not(:disabled):hover {
-    box-shadow: 0 0 15px rgba(45, 212, 191, 0.4);
-    letter-spacing: 0.1em;
-}
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
