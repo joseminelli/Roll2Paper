@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Ficha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-6">
+
+    <div class="card-container bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-lg w-full border border-teal-500/20">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-teal-400 tracking-tighter">Roll2Paper <span class="text-white font-light text-2xl"></span></h1>
+            <p class="text-slate-400 mt-2">Conversor Completo de Personagem (.cah)</p>
+        </div>
+
+        <div class="drop-zone border-2 border-dashed border-teal-500/30 rounded-xl p-10 text-center transition-all hover:border-teal-400 bg-slate-900/50 group">
+            <input type="file" id="fileInput" accept=".cah" class="hidden">
+            <label for="fileInput" class="cursor-pointer block">
+                <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">⚔️</div>
+                <span class="text-lg font-medium text-slate-300 block" id="fileName">Arraste ou selecione o arquivo .cah</span>
+            </label>
+        </div>
+
+        <button id="generateBtn" disabled class="mt-8 w-full bg-teal-600 hover:bg-teal-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all shadow-xl uppercase tracking-widest">
+            Gerar Ficha Completa
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="dragAndDrop.js"></script>
+</body>
+</html>
